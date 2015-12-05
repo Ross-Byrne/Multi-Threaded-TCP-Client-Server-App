@@ -11,6 +11,7 @@ public class Requester{
  	ObjectInputStream in;
  	String message="";
  	String ipaddress;
+ 	InetAddress inetAddress;
  	Scanner stdin;
  	
  	// Constructor
@@ -23,8 +24,19 @@ public class Requester{
 		stdin = new Scanner(System.in);
 		try{
 			//1. creating a socket to connect to the server
-			System.out.println("Please Enter your IP Address");
-			ipaddress = stdin.next();
+			//System.out.println("Please Enter your IP Address");
+			//ipaddress = stdin.next();
+			
+			// DNS Lookup "rbdevelop.cloudapp.net"
+			
+			System.out.println("Preforming DNS Lookup On 'rbdevelop.cloudapp.net'");
+			
+			// preform dns lookup on "rbdevelop.cloudapp.net"
+			inetAddress = InetAddress.getByName("rbdevelop.cloudapp.net");
+			
+			// get ip address from lookup
+			ipaddress = inetAddress.getHostAddress();
+			
 			requestSocket = new Socket(ipaddress, 2004);
 			System.out.println("Connected to "+ipaddress+" in port 2004");
 			//2. get Input and Output streams
