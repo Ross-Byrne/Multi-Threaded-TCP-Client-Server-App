@@ -2,20 +2,45 @@
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 public class EchoServer {
 	
 	public static void main(String[] args) throws Exception {
 	  
 	    ServerSocket m_ServerSocket = new ServerSocket(2004,10);
-	    int id = 0;
+	    Map<String, String> loginDetails = new HashMap<String, String>();
+	    final String LOGIN_FILE = "login.txt";
+	    
 	    boolean isRunning = true;
+	    int id = 0;
+	    
+	    // load login details into map from login.txt
+	    
+	    BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(LOGIN_FILE)));
+		String line = null;
+		
+		// read a line at a time
+		while((line = br.readLine()) != null){
+			
+			// split the line at the space
+			String [] login = line.split(" ");
+			
+			// add the username and password to the login details
+			loginDetails.put(login[0].toString(), login[1].toString());
+		
+		} // while
+		
+		// close the buffered line reader
+		br.close();
+		
+		// wait for connections
 	    
 	    while (isRunning) {
 	    	
 	    	System.out.println("Waiting for connection . . .");
 	    	Socket clientSocket = m_ServerSocket.accept();
-	    	ClientServiceThread cliThread = new ClientServiceThread(clientSocket, id++);
+	    	ClientServiceThread cliThread = new ClientServiceThread(clientSocket, id++, loginDetails);
 	    	cliThread.start();
 	    	
 	    } // while
@@ -35,12 +60,14 @@ class ClientServiceThread extends Thread {
 	boolean running = true;
 	ObjectOutputStream out;
 	ObjectInputStream in;
+	Map<String, String> loginDetails;
 	
 	// Constructor
-	ClientServiceThread(Socket s, int i) {
+	ClientServiceThread(Socket s, int i, Map<String, String> loginMap) {
 		
 		clientSocket = s;
 	    clientID = i;
+	    loginDetails = new HashMap<String, String>(loginMap);
 	    
 	} // ClientServiceThread()
 
@@ -63,6 +90,7 @@ class ClientServiceThread extends Thread {
 		System.out.println("Accepted Client : ID - " + clientID + " : Address - "
         + clientSocket.getInetAddress().getHostName());
 		try {
+			
 			out = new ObjectOutputStream(clientSocket.getOutputStream());
 			out.flush();
 			
@@ -72,6 +100,8 @@ class ClientServiceThread extends Thread {
 		        + clientSocket.getInetAddress().getHostName());
 		
 			sendMessage("Connection successful");
+			
+			// after connecting, user must login
 			
 			do{
 				try{
