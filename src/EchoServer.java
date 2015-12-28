@@ -1,14 +1,7 @@
 
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 
 public class EchoServer {
 	
@@ -16,8 +9,9 @@ public class EchoServer {
 	  
 	    ServerSocket m_ServerSocket = new ServerSocket(2004,10);
 	    int id = 0;
+	    boolean isRunning = true;
 	    
-	    while (true) {
+	    while (isRunning) {
 	    	
 	    	System.out.println("Waiting for connection . . .");
 	    	Socket clientSocket = m_ServerSocket.accept();
@@ -25,6 +19,9 @@ public class EchoServer {
 	    	cliThread.start();
 	    	
 	    } // while
+	    
+	    // close ServerSocket
+	    m_ServerSocket.close();
 	    
   } // main()
 	
@@ -98,4 +95,5 @@ class ClientServiceThread extends Thread {
 		} // try catch
 		
 	} // run()
+	
 } // class

@@ -2,36 +2,40 @@ package client;
 
 import java.io.*;
 import java.net.*;
-import java.util.Scanner;
+import java.util.*;
 
-public class Requester{
+public class Requester {
 	
 	Socket requestSocket;
 	ObjectOutputStream out;
  	ObjectInputStream in;
- 	String message="";
+ 	String message = "";
  	String ipaddress;
  	InetAddress inetAddress;
  	Scanner stdin;
- 	
- 	// Constructor
-	Requester(){
-		
-	} // Requester()
 	
-	void run(){
+ 	public static void main(String args[]){
+ 		
+ 		Requester client = new Requester();
+ 		client.run();
+ 		
+ 	} // main()
+	
+	public void run(){
 		
 		stdin = new Scanner(System.in);
+		
 		try{
 			//1. creating a socket to connect to the server
+			
 			//System.out.println("Please Enter your IP Address");
 			//ipaddress = stdin.next();
 			
 			// DNS Lookup "rbdevelop.cloudapp.net"
 			
-			System.out.println("Preforming DNS Lookup On 'rbdevelop.cloudapp.net'");
+			System.out.println("Performing DNS Lookup On 'rbdevelop.cloudapp.net'");
 			
-			// preform dns lookup on "rbdevelop.cloudapp.net"
+			// perform DNS lookup on "rbdevelop.cloudapp.net"
 			inetAddress = InetAddress.getByName("rbdevelop.cloudapp.net");
 			
 			// get ip address from lookup
@@ -39,12 +43,16 @@ public class Requester{
 			
 			requestSocket = new Socket(ipaddress, 2004);
 			System.out.println("Connected to "+ipaddress+" in port 2004");
+			
 			//2. get Input and Output streams
+			
 			out = new ObjectOutputStream(requestSocket.getOutputStream());
 			out.flush();
 			in = new ObjectInputStream(requestSocket.getInputStream());
 			System.out.println("Hello");
+			
 			//3: Communicating with the server
+			
 			do{
 				try{
 						
@@ -93,15 +101,7 @@ public class Requester{
 			
 			ioException.printStackTrace();
 		} // try catch
+		
 	} // sendMessage()
-	
-	// Main
-	
-	public static void main(String args[]){
-		
-		Requester client = new Requester();
-		client.run();
-		
-	} // main()
 	
 } // class
