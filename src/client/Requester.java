@@ -13,6 +13,9 @@ public class Requester {
  	String ipaddress;
  	InetAddress inetAddress;
  	Scanner stdin;
+ 	
+ 	// when client receives server finished message, client can send message to server
+ 	static final String SERVER_FINISHED_MSG = "_server+finished_";
 	
  	public static void main(String args[]){
  		
@@ -24,6 +27,8 @@ public class Requester {
 	public void run(){
 		
 		stdin = new Scanner(System.in);
+		
+		boolean canSendMessage = false;
 		
 		try{
 			//1. creating a socket to connect to the server
@@ -57,11 +62,30 @@ public class Requester {
 				try{
 						
 					message = (String)in.readObject();
-					System.out.println("Message From Server: " + message);
 					
-					System.out.println("\nPlease Enter the Message to send...");
-					message = stdin.next();
-					sendMessage(message);
+					if(!message.equals(SERVER_FINISHED_MSG))
+						System.out.print("\nServer > " + message);
+					
+					// if the server is finsihed sending messages
+					if(message.equals(SERVER_FINISHED_MSG)){
+						
+						// the client can now send a message
+						canSendMessage = true;
+						message = "";
+						stdin.nextLine(); // flush buffer
+					} // if
+					
+					// if the client is allowed send a message
+					if(canSendMessage){
+					
+						// send message to server
+						
+						System.out.print("\nClient > ");
+						message = stdin.next();
+						
+						sendMessage(message);
+					
+					} // if
 					
 				} catch(ClassNotFoundException classNot){
 					
@@ -80,10 +104,13 @@ public class Requester {
 		} finally{
 			
 			//4: Closing connection
+			
 			try{
+				
 				in.close();
 				out.close();
 				requestSocket.close();
+				
 			} catch(IOException ioException){
 				
 				ioException.printStackTrace();
@@ -105,20 +132,5 @@ public class Requester {
 		} // try catch
 		
 	} // sendMessage()
-	
-	String receiveMessage(){
-		
-		try {
-			
-			return (String)in.readObject();
-			
-		} catch (ClassNotFoundException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			
-			return null;
-		} // try
-		
-	} // receiveMessage()
 	
 } // class

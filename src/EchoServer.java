@@ -54,6 +54,8 @@ public class EchoServer {
 
 class ClientServiceThread extends Thread {
 	
+	static final String SERVER_FINISHED_MSG = "_server+finished_";
+	
 	Socket clientSocket;
 	String message;
 	int clientID = -1;
@@ -61,6 +63,8 @@ class ClientServiceThread extends Thread {
 	ObjectOutputStream out;
 	ObjectInputStream in;
 	Map<String, String> loginDetails;
+	
+	boolean clientIsLoggedIn = false;
 	
 	// Constructor
 	ClientServiceThread(Socket s, int i, Map<String, String> loginMap) {
@@ -76,7 +80,7 @@ class ClientServiceThread extends Thread {
 		try{
 			out.writeObject(msg);
 			out.flush();
-			System.out.println("client> " + msg);
+			System.out.println("Server to Client > " + msg);
 			
 		} catch(IOException ioException){
 			
@@ -103,21 +107,25 @@ class ClientServiceThread extends Thread {
 			
 			// after connecting, user must login
 			
-			sendMessage("Enter Login Username!");
+			clientIsLoggedIn = clientlogin();
 			
-			do{
+			// keep looping while the client is still logged in
+			while(clientIsLoggedIn){ // main loop
+				
 				try{
 				
-					System.out.println("client>"+clientID+"  "+ message);
-					//if (message.equals("bye"))
-					sendMessage("server got the following: "+message);
+					// read message in
 					message = (String)in.readObject();
+					
+					// print out message
+					System.out.println("Client " + clientID + " to Server > " + message);
+					
 				} catch(ClassNotFoundException classnot){
 					
 					System.err.println("Data received in unknown format");
 				} // try catch
 			
-			}while(!message.equals("bye")); // do while
+			} // while
       
 			System.out.println("Ending Client : ID - " + clientID + " : Address - "
 		        + clientSocket.getInetAddress().getHostName());
@@ -127,5 +135,76 @@ class ClientServiceThread extends Thread {
 		} // try catch
 		
 	} // run()
+	
+	// login the client in
+	// returns true if client login is correct, false if wrong
+	boolean clientlogin(){
+		
+		String user, pass;
+		
+		try {
+			
+			// tell client to enter username
+			sendMessage("Login To Server.\nEnter Username.");
+			
+			// server finished send message
+			sendMessage(SERVER_FINISHED_MSG);
+			
+			// read username in
+			user = (String)in.readObject();
+			
+			System.out.println("Client to Server >  " + user);
+			
+			// tell user to enter password
+			sendMessage("Enter Password.");
+			
+			// server finished send message
+			sendMessage(SERVER_FINISHED_MSG);
+			
+			// read password in
+			pass = (String)in.readObject();
+			
+			System.out.println("Client to Server >  " + pass);
+			
+			System.out.println(loginDetails.get("user1"));
+			
+			
+			// validate login
+			if(loginDetails.get(user).equals(pass)){ // login successful
+				
+				// tell client login successful
+				sendMessage("Login Successful!");
+				
+				// server finished send message
+				sendMessage(SERVER_FINISHED_MSG);
+				
+				return true;
+				
+			} else { // login failed
+				
+				// tell client login failed
+				
+				sendMessage("Login Failed! Username Or Password Incorrect!");
+				
+				// server finished send message
+				sendMessage(SERVER_FINISHED_MSG);
+				
+				return false;
+			} // if
+			
+		} catch (ClassNotFoundException e) {
+			
+			System.err.println("Data received in unknown format");
+			
+			return false;
+			
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+			
+			return false;
+		} // try catch
+		
+	} // clientlogin()
 	
 } // class
