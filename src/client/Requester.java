@@ -28,18 +28,18 @@ public class Requester {
 		try{
 			//1. creating a socket to connect to the server
 			
-			//System.out.println("Please Enter your IP Address");
-			//ipaddress = stdin.next();
+			System.out.println("Please Enter your IP Address");
+			ipaddress = stdin.next();
 			
 			// DNS Lookup "rbdevelop.cloudapp.net"
 			
-			System.out.println("Performing DNS Lookup On 'rbdevelop.cloudapp.net'");
+			//System.out.println("Performing DNS Lookup On 'rbdevelop.cloudapp.net'");
 			
 			// perform DNS lookup on "rbdevelop.cloudapp.net"
-			inetAddress = InetAddress.getByName("rbdevelop.cloudapp.net");
+			//inetAddress = InetAddress.getByName("rbdevelop.cloudapp.net");
 			
 			// get ip address from lookup
-			ipaddress = inetAddress.getHostAddress();
+			//ipaddress = inetAddress.getHostAddress();
 			
 			requestSocket = new Socket(ipaddress, 2004);
 			System.out.println("Connected to "+ipaddress+" in port 2004");
@@ -57,7 +57,9 @@ public class Requester {
 				try{
 						
 					message = (String)in.readObject();
-					System.out.println("Please Enter the Message to send...");
+					System.out.println("Message From Server: " + message);
+					
+					System.out.println("\nPlease Enter the Message to send...");
 					message = stdin.next();
 					sendMessage(message);
 					
@@ -103,5 +105,20 @@ public class Requester {
 		} // try catch
 		
 	} // sendMessage()
+	
+	String receiveMessage(){
+		
+		try {
+			
+			return (String)in.readObject();
+			
+		} catch (ClassNotFoundException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+			return null;
+		} // try
+		
+	} // receiveMessage()
 	
 } // class

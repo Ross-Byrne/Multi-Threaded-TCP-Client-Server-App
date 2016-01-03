@@ -103,6 +103,8 @@ class ClientServiceThread extends Thread {
 			
 			// after connecting, user must login
 			
+			sendMessage("Enter Login Username!");
+			
 			do{
 				try{
 				
