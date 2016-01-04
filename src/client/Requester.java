@@ -35,6 +35,8 @@ public class Requester {
 			
 			System.out.println("Please Enter your IP Address");
 			ipaddress = stdin.next();
+			stdin.nextLine(); // flush buffer
+			
 			
 			// DNS Lookup "rbdevelop.cloudapp.net"
 			
@@ -63,8 +65,9 @@ public class Requester {
 						
 					message = (String)in.readObject();
 					
+					// only show message from server if it's not server finished message
 					if(!message.equals(SERVER_FINISHED_MSG))
-						System.out.print("\nServer > " + message);
+						System.out.println("Server > " + message);
 					
 					// if the server is finsihed sending messages
 					if(message.equals(SERVER_FINISHED_MSG)){
@@ -72,7 +75,7 @@ public class Requester {
 						// the client can now send a message
 						canSendMessage = true;
 						message = "";
-						stdin.nextLine(); // flush buffer
+						//stdin.next(); // flush buffer
 					} // if
 					
 					// if the client is allowed send a message
@@ -80,10 +83,13 @@ public class Requester {
 					
 						// send message to server
 						
-						System.out.print("\nClient > ");
-						message = stdin.next();
+						System.out.print("Client > ");
+						message = stdin.nextLine();
 						
 						sendMessage(message);
+						
+						// message sent, cant send again until server says so
+						canSendMessage = false;
 					
 					} // if
 					
@@ -125,7 +131,7 @@ public class Requester {
 		try{
 			out.writeObject(msg);
 			out.flush();
-			System.out.println("client>" + msg);
+			//System.out.println("client>" + msg);
 		} catch(IOException ioException){
 			
 			ioException.printStackTrace();

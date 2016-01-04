@@ -65,6 +65,7 @@ class ClientServiceThread extends Thread {
 	Map<String, String> loginDetails;
 	
 	boolean clientIsLoggedIn = false;
+	List<String> clientsCurDirectory = new ArrayList(); // to keep track of the clients current directory
 	
 	// Constructor
 	ClientServiceThread(Socket s, int i, Map<String, String> loginMap) {
@@ -120,6 +121,9 @@ class ClientServiceThread extends Thread {
 					// print out message
 					System.out.println("Client " + clientID + " to Server > " + message);
 					
+					// server finished send message
+					sendMessage(SERVER_FINISHED_MSG);
+					
 				} catch(ClassNotFoundException classnot){
 					
 					System.err.println("Data received in unknown format");
@@ -141,11 +145,13 @@ class ClientServiceThread extends Thread {
 	boolean clientlogin(){
 		
 		String user, pass;
+		boolean isValidLogin = false;
 		
 		try {
 			
 			// tell client to enter username
-			sendMessage("Login To Server.\nEnter Username.");
+			sendMessage("Login To Server.");
+			sendMessage("Enter Username.");
 			
 			// server finished send message
 			sendMessage(SERVER_FINISHED_MSG);
@@ -153,7 +159,7 @@ class ClientServiceThread extends Thread {
 			// read username in
 			user = (String)in.readObject();
 			
-			System.out.println("Client to Server >  " + user);
+			System.out.println("Client " + clientID + " to Server >  " + user);
 			
 			// tell user to enter password
 			sendMessage("Enter Password.");
@@ -164,13 +170,18 @@ class ClientServiceThread extends Thread {
 			// read password in
 			pass = (String)in.readObject();
 			
-			System.out.println("Client to Server >  " + pass);
+			System.out.println("Client " + clientID + " to Server >  " + pass);
 			
-			System.out.println(loginDetails.get("user1"));
+			if(loginDetails.get(user) != null){
 			
+				isValidLogin = loginDetails.get(user).equals(pass);
+			} else {
+				
+				isValidLogin = false;
+			} // if
 			
 			// validate login
-			if(loginDetails.get(user).equals(pass)){ // login successful
+			if(isValidLogin == true){ // login successful
 				
 				// tell client login successful
 				sendMessage("Login Successful!");
