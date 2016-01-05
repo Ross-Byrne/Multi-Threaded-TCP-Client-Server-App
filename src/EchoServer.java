@@ -67,6 +67,9 @@ class ClientServiceThread extends Thread {
 	boolean clientIsLoggedIn = false;
 	List<String> clientsCurDirectory = new ArrayList(); // to keep track of the clients current directory
 	
+	StringBuilder fileListSB = new StringBuilder();
+	StringBuilder directoryListSB = new StringBuilder();
+	
 	// Constructor
 	ClientServiceThread(Socket s, int i, Map<String, String> loginMap) {
 		
@@ -120,6 +123,54 @@ class ClientServiceThread extends Thread {
 					
 					// print out message
 					System.out.println("Client " + clientID + " to Server > " + message);
+					
+					switch(message){
+					case "ls":
+						
+						File folder = new File(".");
+						File[] listOfFiles = folder.listFiles();
+						
+						fileListSB.append("Files:");
+						directoryListSB.append("Directorys:");
+						
+						// loop through the list of files in the directory
+					    for (int i = 0; i < listOfFiles.length; i++) {
+					    	
+					    	// if the file is a file
+					    	if (listOfFiles[i].isFile()) {
+					    		
+					    		// add name to list of files string
+					    		fileListSB.append(" ").append(listOfFiles[i]);
+					    		
+					    		//System.out.println("File " + listOfFiles[i].getName());
+					    		
+					    	} else if (listOfFiles[i].isDirectory()) { // if the file is a directory
+					    	  
+					    		// add name to list of directories string
+					    		directoryListSB.append(" ").append(listOfFiles[i]);
+					    		
+					    		//System.out.println("Directory " + listOfFiles[i].getName());
+					    	} // if
+				    	} // for
+					    
+					    // send results to the client
+					    sendMessage(directoryListSB.toString());
+					    sendMessage(fileListSB.toString());
+					    
+					    // clear string builders
+					    directoryListSB.setLength(0);
+					    fileListSB.setLength(0);
+					    
+					    // finish
+					    //sendMessage(SERVER_FINISHED_MSG);
+					    
+						break;
+					case "get":
+						
+						System.out.println("Get File!");
+						break;
+						
+					} // switch
 					
 					// server finished send message
 					sendMessage(SERVER_FINISHED_MSG);
