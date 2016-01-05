@@ -75,7 +75,6 @@ public class Requester {
 						// the client can now send a message
 						canSendMessage = true;
 						message = "";
-						//stdin.next(); // flush buffer
 					} // if
 					
 					// if the client is allowed send a message
