@@ -56,6 +56,7 @@ class ClientServiceThread extends Thread {
 	
 	static final String SERVER_FINISHED_MSG = "_server+finished_";
 	static final String SERVER_SENDING_FILE_MSG = "_server+sending+file_";
+	static final String CLIENT_SENDING_FILE_MSG = "_client+sending+file_";
 	
 	ServerSocket m_ServerSocket;
 	Socket clientSocket;
@@ -68,6 +69,9 @@ class ClientServiceThread extends Thread {
 	
 	// for sending files
 	FileInputStream fis;
+	
+	// to receive files
+ 	FileOutputStream fos;
 	
 	boolean clientIsLoggedIn = false;
 	List<String> clientsCurDirectory = new ArrayList(); // to keep track of the clients current directory
@@ -107,9 +111,6 @@ class ClientServiceThread extends Thread {
 		    // send the byte array to client
 		    out.writeObject(fileBytes);
 			
-		    // close file input stream
-		    fis.close();
-		    
 		} catch (FileNotFoundException e) {
 
 			System.out.println("ERROR, File not found!");
@@ -117,9 +118,71 @@ class ClientServiceThread extends Thread {
 		} catch (IOException e) {
 
 			e.printStackTrace();
+			
+		} finally {
+			
+		    try {
+		    	
+		    	// close file input stream
+				fis.close();
+				
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			} // try catch
+			
 		} // try catch
 		
 	} // sendFile()
+	
+	
+	void receiveFile(String fileName, int fileSize){
+ 		
+ 		// create the downloads directory file
+ 		File file = new File("Downloads");
+ 		
+ 		// make the file a directory
+ 		file.mkdirs();
+ 		
+ 		try {
+ 			
+ 			// create an array of btyes
+ 			// receive an array of bytes that make up the file and place them in fileBytes
+ 		    byte[] fileBytes = (byte[]) in.readObject();
+ 		    
+ 		    // create a file output stream
+ 		    fos = new FileOutputStream("Downloads" + File.separator + fileName);
+ 		    
+ 		    // write the received file bytes to the file
+ 		    fos.write(fileBytes); 
+ 			
+		} catch (FileNotFoundException e) {
+
+			System.out.println("ERROR, File not found!");
+			
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+			
+		} catch (ClassNotFoundException e) {
+			
+			System.err.println("data received in unknown format");
+			
+		} finally {
+			
+		    try {
+		    	
+		    	// close the file output stream
+	 			fos.close();
+				
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			} // try catch
+			
+		} // try catch
+ 		
+ 	} // receiveFile()
 
 	void sendMessage(String msg){
 		
@@ -166,6 +229,38 @@ class ClientServiceThread extends Thread {
 					// print out message
 					System.out.println("Client " + clientID + " to Server > " + message);
 					
+					// check if the client is sending a file
+					if(message.equals(CLIENT_SENDING_FILE_MSG)){
+						
+						String fileName = "";
+						int fileSize = 0;
+						
+						// receive file name 
+						fileName = (String)in.readObject();
+						
+						// receive file size
+						fileSize = Integer.parseInt((String)in.readObject());
+						
+						// receive file
+						receiveFile(fileName, fileSize);
+						
+						System.out.println("File recieved!");
+						
+					} // if
+					
+					// check if the client is logging out
+					if(message.equals("bye")){
+						
+						System.out.println("Client " + clientID + " is Logging Out!");
+						
+						// set client to not logged in
+						clientIsLoggedIn = false;
+						
+						// break out of loop
+						break;
+						
+					} // if
+					
 					// splits string to get command and parameter
 					clientInput = message.split(" ");
 					
@@ -208,6 +303,7 @@ class ClientServiceThread extends Thread {
 					    	} // for
 						    
 						    // send results to the client
+						    sendMessage("Server's Files.");
 						    sendMessage(directoryListSB.toString());
 						    sendMessage(fileListSB.toString());
 						    
@@ -262,7 +358,12 @@ class ClientServiceThread extends Thread {
 							break;
 						default:
 							
-							sendMessage("Incorrect Command! No action taken!");
+							// if the message from the client is not the CLIENT_SENDING_FILE_MSG message
+							if(!message.equals(CLIENT_SENDING_FILE_MSG)){
+								
+								// send error message to client
+								sendMessage("Incorrect Command! No action taken!");
+							} // if
 							
 							break;
 							
