@@ -55,7 +55,9 @@ public class EchoServer {
 class ClientServiceThread extends Thread {
 	
 	static final String SERVER_FINISHED_MSG = "_server+finished_";
+	static final String SERVER_SENDING_FILE_MSG = "_server+sending+file_";
 	
+	ServerSocket m_ServerSocket;
 	Socket clientSocket;
 	String message;
 	int clientID = -1;
@@ -63,6 +65,9 @@ class ClientServiceThread extends Thread {
 	ObjectOutputStream out;
 	ObjectInputStream in;
 	Map<String, String> loginDetails;
+	
+	// for sending files
+	FileInputStream fis;
 	
 	boolean clientIsLoggedIn = false;
 	List<String> clientsCurDirectory = new ArrayList(); // to keep track of the clients current directory
@@ -81,6 +86,40 @@ class ClientServiceThread extends Thread {
 	    loginDetails = new HashMap<String, String>(loginMap);
 	    
 	} // ClientServiceThread()
+	
+	void sendFile(File file){
+		
+		int bytesRead = 0;
+		
+		try {
+			
+			// create a file input stream for the file being sent
+			fis = new FileInputStream(file);
+			
+			// create a byte array to hold the bytes of the file
+		    byte[] fileBytes = new byte[fis.available()]; // cant handdle files bigger then 1GB
+		    
+		    // track the number of bytes read
+		    bytesRead = fis.read(fileBytes);
+
+		    System.out.println("bytes read: " + bytesRead);
+		    
+		    // send the byte array to client
+		    out.writeObject(fileBytes);
+			
+		    // close file input stream
+		    fis.close();
+		    
+		} catch (FileNotFoundException e) {
+
+			System.out.println("ERROR, File not found!");
+			
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		} // try catch
+		
+	} // sendFile()
 
 	void sendMessage(String msg){
 		
@@ -139,7 +178,10 @@ class ClientServiceThread extends Thread {
 						switch(clientInput[0]){ // get command
 						case "ls":
 							
+							// create a file to track current directory
 							File currentDirectory = new File(".");
+							
+							// create an array of all the files in current directory
 							File[] listOfFiles = currentDirectory.listFiles();
 							
 							fileListSB.append("Files:");
@@ -195,6 +237,20 @@ class ClientServiceThread extends Thread {
 								} else { // if the file exsits
 									
 									sendMessage("File Found!");
+									
+									// send message to client telling it to prepare to receive file
+									sendMessage(SERVER_SENDING_FILE_MSG);
+									
+									// send file name 
+									sendMessage(file.getName());
+									
+									// send file size
+									sendMessage(String.valueOf(file.length()));
+									
+									// send file
+									sendFile(file);
+									
+									System.out.println("File sent!");
 									
 								} // if
 								

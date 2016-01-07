@@ -14,8 +14,12 @@ public class Requester {
  	InetAddress inetAddress;
  	Scanner stdin;
  	
+ 	// to receive files
+ 	FileOutputStream fos;
+ 	
  	// when client receives server finished message, client can send message to server
  	static final String SERVER_FINISHED_MSG = "_server+finished_";
+ 	static final String SERVER_SENDING_FILE_MSG = "_server+sending+file_";
 	
  	public static void main(String args[]){
  		
@@ -23,6 +27,44 @@ public class Requester {
  		client.run();
  		
  	} // main()
+ 	
+ 	void receiveFile(String fileName, int fileSize){
+ 		
+ 		// create the downloads directory file
+ 		File file = new File("Downloads");
+ 		
+ 		// make the file a directory
+ 		file.mkdirs();
+ 		
+ 		try {
+ 			
+ 			// create an array of btyes
+ 			// receive an array of bytes that make up the file and place them in fileBytes
+ 		    byte[] fileBytes = (byte[]) in.readObject();
+ 		    
+ 		    // create a file output stream
+ 		    fos = new FileOutputStream("Downloads" + File.separator + fileName);
+ 		    
+ 		    // write the received file bytes to the file
+ 		    fos.write(fileBytes);
+ 		    
+ 		    // close the file output stream
+ 			fos.close();
+ 			
+		} catch (FileNotFoundException e) {
+
+			System.out.println("ERROR, File not found!");
+			
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} // try catch
+ 		
+ 	} // receiveFile()
 	
 	public void run(){
 		
@@ -62,7 +104,8 @@ public class Requester {
 			
 			do{
 				try{
-						
+					
+					// read message
 					message = (String)in.readObject();
 					
 					// only show message from server if it's not server finished message
@@ -91,6 +134,26 @@ public class Requester {
 						canSendMessage = false;
 					
 					} // if
+					
+					// check if the server is sending a file
+					if(message.equals(SERVER_SENDING_FILE_MSG)){
+						
+						String fileName = "";
+						int fileSize = 0;
+						
+						// receive file name 
+						fileName = (String)in.readObject();
+						
+						// receive file size
+						fileSize = Integer.parseInt((String)in.readObject());
+						
+						// receive file
+						receiveFile(fileName, fileSize);
+						
+						System.out.println("File recieved!");
+						
+					} // if
+					
 					
 				} catch(ClassNotFoundException classNot){
 					
