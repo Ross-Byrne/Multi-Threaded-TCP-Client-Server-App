@@ -380,6 +380,29 @@ class ClientServiceThread extends Thread {
 				} catch(ClassNotFoundException classnot){
 					
 					System.err.println("Data received in unknown format");
+					
+				} catch(EOFException e){
+					
+					System.err.println("Connection To Client " + clientID + " Was Lost!");
+					
+				} finally{
+					
+					// Closing connection
+					
+					try{
+						
+						in.close();
+						out.close();
+						clientSocket.close();
+						
+						// break out of while loop
+						break;
+						
+					} catch(IOException ioException){
+						
+						ioException.printStackTrace();
+					} // try catch
+					
 				} // try catch
 			
 			} // while
@@ -389,6 +412,21 @@ class ClientServiceThread extends Thread {
 		} catch (Exception e) {
     	
 			e.printStackTrace();
+		} finally{
+			
+			// Closing connection
+			
+			try{
+				
+				in.close();
+				out.close();
+				clientSocket.close();
+				
+			} catch(IOException ioException){
+				
+				ioException.printStackTrace();
+			} // try catch
+			
 		} // try catch
 		
 	} // run()
@@ -450,8 +488,9 @@ class ClientServiceThread extends Thread {
 				
 				sendMessage("Login Failed! Username Or Password Incorrect!");
 				
-				// server finished send message
-				sendMessage(SERVER_FINISHED_MSG);
+				// client is disconnected
+				// send "bye" message to disconnect client
+				sendMessage("bye");
 				
 				return false;
 			} // if

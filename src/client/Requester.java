@@ -12,7 +12,7 @@ public class Requester {
  	String message = "";
  	String ipaddress;
  	InetAddress inetAddress;
- 	Scanner stdin;
+ 	Scanner scanner;
  	
  	// for sending files
  	FileInputStream fis;
@@ -49,7 +49,7 @@ public class Requester {
 			fis = new FileInputStream(file);
 			
 			// create a byte array to hold the bytes of the file
-		    byte[] fileBytes = new byte[fis.available()]; // cant handdle files bigger then 1GB
+		    byte[] fileBytes = new byte[fis.available()]; // can't handle files bigger then 1GB
 		    
 		    // track the number of bytes read
 		    bytesRead = fis.read(fileBytes);
@@ -106,7 +106,7 @@ public class Requester {
  			
 		} catch (FileNotFoundException e) {
 
-			System.out.println("ERROR, File not found!");
+			System.err.println("ERROR, File not found!");
 			
 		} catch (IOException e) {
 			
@@ -134,29 +134,66 @@ public class Requester {
 	
 	public void run(){
 		
-		stdin = new Scanner(System.in);
+		scanner = new Scanner(System.in);
 		
 		boolean canSendMessage = false;
 		boolean clientIsFinished = true;
+		int menuChoice = 0;
 		
 		try{
 			//1. creating a socket to connect to the server
 			
-			System.out.println("Please Enter your IP Address");
-			ipaddress = stdin.next();
-			stdin.nextLine(); // flush buffer
+			do{
+				
+				// Print out Menu Options
+				System.out.println("\n1.) Type IP Address.");
+				System.out.println("2.) Type Domain Name To Perform DNS Lookup On. (May Crash If TimeOut Occurs!)");
+				
+				System.out.print("\nEnter Option: ");
+				
+				while(!scanner.hasNextInt()){
+					
+					System.out.print("Enter Option: ");
+					scanner.next(); // to advance Scanner past input
+					
+				} // while
+				
+				// get users input
+				menuChoice = scanner.nextInt();
 			
+			}while(menuChoice < 1 || menuChoice > 2); // do while
 			
-			// DNS Lookup "rbdevelop.cloudapp.net"
-			
-			//System.out.println("Performing DNS Lookup On 'rbdevelop.cloudapp.net'");
-			
-			// perform DNS lookup on "rbdevelop.cloudapp.net"
-			//inetAddress = InetAddress.getByName("rbdevelop.cloudapp.net");
-			
-			// get ip address from lookup
-			//ipaddress = inetAddress.getHostAddress();
-			
+			switch(menuChoice){
+			case 1: // type IP address in
+				
+				System.out.print("Client > Please Enter your IP Address: ");
+				ipaddress = scanner.next();
+				scanner.nextLine(); // flush buffer
+				
+				break;
+			case 2: // type domain name for DNS Lookup
+				String domain = "";
+				
+				// flush buffer
+				scanner.nextLine();
+				
+				// get Domain from user for the DNS Lookup
+				System.out.print("Client > Please Enter Domain Name For DNS Lookup: ");
+				domain = scanner.nextLine();
+				
+				System.out.println("Client > Performing DNS Lookup On '" + domain + "'.");
+				
+				// perform DNS lookup on domain
+				inetAddress = InetAddress.getByName(domain);
+		
+				
+				// get ip address from lookup
+				ipaddress = inetAddress.getHostAddress();
+				
+				break;
+			} // switch
+						
+			// create a socket to the server
 			requestSocket = new Socket(ipaddress, 2004);
 			System.out.println("Connected to "+ipaddress+" in port 2004");
 			
@@ -180,14 +217,18 @@ public class Requester {
 					} // if
 					
 					// only show message from server if it's not server finished message
-					if(!message.equals(SERVER_FINISHED_MSG))
+					if(!message.equals(SERVER_FINISHED_MSG)){
+						
 						System.out.println("Server > " + message);
+					} // if
 					
-					// if the server is finsihed sending messages
+					// if the server is finished sending messages
 					if(message.equals(SERVER_FINISHED_MSG)){
 						
 						// the client can now send a message
 						canSendMessage = true;
+						
+						// client is not finished
 						clientIsFinished = false;
 						message = "";
 					} // if
@@ -214,10 +255,9 @@ public class Requester {
 					// if the client is allowed send a message
 					if(canSendMessage || !clientIsFinished){
 					
-						// send message to server
-						
+						// get message from client
 						System.out.print("Client > ");
-						message = stdin.nextLine();
+						message = scanner.nextLine();
 						
 						// client is finished unless stated otherwise later
 						clientIsFinished = true;
@@ -252,14 +292,11 @@ public class Requester {
 							    		// add name to list of files string
 							    		fileListSB.append("  ").append(listOfFiles[i].getName());
 							    		
-							    		//System.out.println("File " + listOfFiles[i].getName());
-							    		
 							    	} else if (listOfFiles[i].isDirectory()) { // if the file is a directory
 							    	  
 							    		// add name to list of directories string
 							    		directoryListSB.append("  ").append(listOfFiles[i].getName());
-							    		
-							    		//System.out.println("Directory " + listOfFiles[i].getName());
+							    
 							    	} // if
 						    	} // for
 							    
@@ -278,7 +315,7 @@ public class Requester {
 							    // client is finished
 							    clientIsFinished = true;
 							    
-							    // cant send any messages until server is finished
+							    // can't send any messages until server is finished
 							    canSendMessage = false;
 							    
 								break;
@@ -294,6 +331,7 @@ public class Requester {
 										// Tell the client
 										System.out.println("Client > " + clientInput[1] + " is a Directory! Cannot Get!");
 										
+										// action failed so client is not finished
 										clientIsFinished = false;
 										break;
 									} // if
@@ -304,11 +342,12 @@ public class Requester {
 										// Tell the client
 										System.out.println("Client > Sorry, file does not exist!");
 										
+										// action failed so client is not finished
 										clientIsFinished = false;
 								
 										break;
 										
-									} else { // if the file exsits
+									} else { // if the file exists
 										
 										System.out.println("File Found!");
 										
@@ -344,7 +383,7 @@ public class Requester {
 								break;
 							default:
 								
-								// if the client is finished, and message is not blank, send message to the server
+								// if the client is finished, send message to the server
 								if(clientIsFinished){
 									
 									// send message to the server
@@ -365,6 +404,27 @@ public class Requester {
 				} catch(ClassNotFoundException classNot){
 					
 					System.err.println("data received in unknown format");
+					
+				} catch(EOFException e){
+					
+					System.err.println("Connection To Server Was Lost!");
+					
+					// Closing connection
+					
+					try{
+						
+						in.close();
+						out.close();
+						requestSocket.close();
+						
+					} catch(IOException ioException){
+						
+						ioException.printStackTrace();
+					} // try catch
+					
+					// make message "bye" to exit the while loop
+					message = "bye";
+					
 				} // try catch
 				
 			}while(!message.equals("bye")); // do while
@@ -372,6 +432,14 @@ public class Requester {
 		} catch(UnknownHostException unknownHost){
 			
 			System.err.println("You are trying to connect to an unknown host!");
+			
+		} catch(ConnectException e){
+			
+			System.err.println("Client > Connection Timed Out!");
+			
+		} catch(EOFException e){
+			
+			System.err.println("Connection To Server Was Lost!");
 			
 		} catch(IOException ioException){
 			
@@ -385,6 +453,8 @@ public class Requester {
 				in.close();
 				out.close();
 				requestSocket.close();
+				
+				System.out.println("Client > Program Exiting.");
 				
 			} catch(IOException ioException){
 				
