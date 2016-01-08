@@ -4,7 +4,7 @@ A multi-threaded TCP client and server application coded in Java in Eclipse 4.5.
 A Third Year college project for Operating Systems Module.
 
 ## Overview
-The client connects to the server on port 2004. The options of entering either an IP Address or Domain name for a DNS lookup are available.
+The client connects to the server on port 2004. The options of entering either an IP Address or Domain name for a DNS lookup are available. If the DNS lookup times out, the client will crash.
 
 When the server starts, it reads login.txt to read the list of usernames and passwords. It adds these to a map so it can validate a users login.
 
@@ -29,6 +29,18 @@ The clients current directory is stored on the thread that is created by the ser
 The current directory is split up into strings and stored in a List of Strings. When the current directory is needed, it is generated using a string builder.
 
 When the client moves into a new directory, a the directory name is added to the end of the current directory List. When the client moves back one directory, the last item in the List is deleted.
+
+## Setup
+The server is set up as follows:
+
+The server is in a folder called TCP-Server. 
+In TCP-Server, the files EchoServer.class and ClientServiceThread.class, as well as login.txt are placed.
+Once the server starts, it will create a folder called Users, and fills it with folders named after all the Usernames in login.txt.
+
+The client is set up as follows:
+
+The client must be in a folder called client.
+In client, the file requester.class is placed. Any files you wish to send to the server must also be placed in client with requester.class.
 
 ## Controls
 
