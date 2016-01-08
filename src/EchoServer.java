@@ -370,7 +370,18 @@ class ClientServiceThread extends Thread {
 							
 							if(clientInput.length == 2){
 								
-								File file = new File(clientInput[1]);
+								// clear string builder
+								clientsCurrentDirectory.setLength(0);
+								
+								// create a string to represent the clients current directory
+								for(int i = 0; i < directoryHolder.size(); i++){
+									
+									// add the directory to the string builder followed by the separator for the system
+									clientsCurrentDirectory.append(directoryHolder.get(i)).append(File.separator);
+									
+								} // for
+								
+								File file = new File(clientsCurrentDirectory.toString() + File.separator + clientInput[1]);
 								
 								// if the file is a Directory
 								if(file.isDirectory()){
