@@ -137,7 +137,7 @@ class ClientServiceThread extends Thread {
 		    // track the number of bytes read
 		    bytesRead = fis.read(fileBytes);
 
-		    System.out.println("bytes read: " + bytesRead);
+		    System.out.println("Server > bytes read: " + bytesRead);
 		    
 		    // send the byte array to client
 		    out.writeObject(fileBytes);
@@ -411,7 +411,7 @@ class ClientServiceThread extends Thread {
 									// send file
 									sendFile(file);
 									
-									System.out.println("File sent!");
+									System.out.println("Server > File sent!");
 									
 								} // if
 								

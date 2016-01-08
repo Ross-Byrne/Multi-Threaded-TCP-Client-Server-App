@@ -54,14 +54,14 @@ public class Requester {
 		    // track the number of bytes read
 		    bytesRead = fis.read(fileBytes);
 
-		    System.out.println("bytes read: " + bytesRead);
+		    System.out.println("Client > bytes read: " + bytesRead);
 		    
 		    // send the byte array to client
 		    out.writeObject(fileBytes);
 			
 		} catch (FileNotFoundException e) {
 
-			System.out.println("ERROR, File not found!");
+			System.out.println("Client > ERROR, File not found!");
 			
 		} catch (IOException e) {
 
@@ -248,7 +248,7 @@ public class Requester {
 						// receive file
 						receiveFile(fileName, fileSize);
 						
-						System.out.println("File recieved!");
+						System.out.println("Client > File recieved!");
 						
 					} // if
 					
@@ -363,7 +363,7 @@ public class Requester {
 										// send file
 										sendFile(file);
 										
-										System.out.println("File sent!");
+										System.out.println("Client > File sent!");
 										
 										// the client is finished
 										clientIsFinished = true;
