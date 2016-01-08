@@ -108,7 +108,7 @@ class ClientServiceThread extends Thread {
 	StringBuilder directoryListSB = new StringBuilder();
 	
 	StringBuilder clientsCurrentDirectory = new StringBuilder(); // to hold the clients current directory
-	ArrayList<String> directoryHolder = new ArrayList(); // to hold directory values
+	List<String> directoryHolder = new ArrayList<String>(); // to hold directory values
 	
 	String[] clientInput;
 	int inputLength = 0;
@@ -310,7 +310,7 @@ class ClientServiceThread extends Thread {
 					if(!(inputLength > 2 || inputLength < 1) && !(clientInput[0].equals(""))){
 					
 						switch(clientInput[0]){ // get command
-						case "ls":
+						case "ls": // listing the files and directories in the current directory
 							
 							// clear string builder
 							clientsCurrentDirectory.setLength(0);
@@ -366,7 +366,7 @@ class ClientServiceThread extends Thread {
 						    fileListSB.setLength(0);
 						      
 							break;
-						case "get":
+						case "get": // getting a file from the server
 							
 							if(clientInput.length == 2){
 								
@@ -406,8 +406,170 @@ class ClientServiceThread extends Thread {
 								
 							} else { // if there isn't a name for file after Get
 								
-								sendMessage("ERROR, Command Get must be followed by a file name that is in the current directory!");
+								sendMessage("ERROR, Command get must be followed by a file name that is in the current directory!");
 							}
+							
+							break;
+						case "cd": // changing directory
+							
+							// make sure client enters parameter for cd command
+							if(clientInput.length == 2){
+								
+								// check if the client wants to go back to previous directory 
+								if(clientInput[1].equals("..")){
+									
+									// check if the client can go back to parent directory
+									if(directoryHolder.size() > 2){ // if client is not in user directory eg Users/[Username]
+										
+										// remove last directory entry from directoryHolder so client is moved back one directory
+										directoryHolder.remove(directoryHolder.size()-1);
+										
+										// create string to represent current directory
+										
+										// clear string builder
+										clientsCurrentDirectory.setLength(0);
+										
+										// create a string to represent the clients current directory
+										for(int i = 0; i < directoryHolder.size(); i++){
+											
+											// add the directory to the string builder followed by the separator for the system
+											clientsCurrentDirectory.append(directoryHolder.get(i)).append(File.separator);
+											
+										} // for
+										
+										// tell client they are moving back one directory
+										sendMessage("Moving back to: " + clientsCurrentDirectory.toString());
+										
+									} else { // if the user is already in home directory 
+										
+										// tell the user they cannot move back
+										sendMessage("Error, Already in User's Home Directory! Cannot Move Further Back!");
+										
+									} // if
+									
+									// break out because selected command is complete
+									break;
+									
+								} // if
+								
+								// check that directory selected exists
+								
+								// clear string builder
+								clientsCurrentDirectory.setLength(0);
+								
+								// create a string to represent the clients current directory
+								for(int i = 0; i < directoryHolder.size(); i++){
+									
+									// add the directory to the string builder followed by the separator for the system
+									clientsCurrentDirectory.append(directoryHolder.get(i)).append(File.separator);
+									
+								} // for
+					
+								// create a file to track current directory
+								currentDirectory = new File(clientsCurrentDirectory.toString());
+								
+								// create a file to represent the directory the user wants to move to
+								File targetDirectory = new File(clientsCurrentDirectory.toString() + File.separator + clientInput[1]);
+								
+								// check if the file exists
+								if(targetDirectory.exists()){
+									
+									// check if the file that exists is a directory
+									if(targetDirectory.isDirectory()){
+										
+										// tell the client their directory is being changed
+										sendMessage("Moving to: " + clientsCurrentDirectory.toString() + File.separator + clientInput[1]);
+										
+										// move the client's current directory to the new directory
+										directoryHolder.add(clientInput[1]);
+										
+									} else { // if file is not a directory
+										
+										// tell client they cannot move, file is not directory
+										sendMessage("Error! " + clientInput[1] + " is a File, not a Directory! Cannot Move!");
+										
+									} // if
+									
+								} else { // if the file does not exist
+									
+									// tell client the directory does not exist
+									sendMessage("Error! Direcotry '" + clientInput[1] + "' Does Not Exist! Cannot Move!");
+									
+								} // if
+								
+							} else { // if no parameter after command
+								
+								sendMessage("ERROR, Command cd must be followed by a directory in your current directory Or '..' to move back one directory!");
+							
+							} // if
+							
+							break;
+						case "mkdir": // making a directory
+							
+							if(clientInput.length == 2){
+								
+								// clear string builder
+								clientsCurrentDirectory.setLength(0);
+								
+								// create a string to represent the clients current directory
+								for(int i = 0; i < directoryHolder.size(); i++){
+									
+									// add the directory to the string builder followed by the separator for the system
+									clientsCurrentDirectory.append(directoryHolder.get(i)).append(File.separator);
+									
+								} // for
+					
+								// create a file to track current directory
+								currentDirectory = new File(clientsCurrentDirectory.toString());
+								
+								// create a file to represent the directory the user wants to create
+								File newDirectory = new File(clientsCurrentDirectory.toString() + File.separator + clientInput[1]);
+								
+								// check if the directory already exists
+								if(newDirectory.exists() && newDirectory.isDirectory()){
+									
+									// tell user the directory already exists
+									sendMessage("Error! Directory '" + clientInput[1] + "' Already exists!");
+									
+								} else { // otherwise create the directory
+									
+									// create the new directory
+									newDirectory.mkdirs();
+									
+									// tell the client that the directory is created
+									sendMessage("Created Directory '" + clientInput[1] + "'");
+									
+								} // if
+								
+							} else { // if no parameter after command
+								
+								// tell the client they need to add a parameter after command
+								sendMessage("ERROR, Command mkdir must be followed by the name of the directory you want to create!");
+								
+							} // if
+							
+							break;
+						case "pwd": // print the current working directory
+							
+							// check if the client entered more then "pwd"
+							if(inputLength > 1){
+								
+								sendMessage("Command 'pwd' is all that is needed to print working directory!");
+							} // if
+							
+							// clear string builder
+							clientsCurrentDirectory.setLength(0);
+							
+							// create a string to represent the clients current directory
+							for(int i = 0; i < directoryHolder.size(); i++){
+								
+								// add the directory to the string builder followed by the separator for the system
+								clientsCurrentDirectory.append(directoryHolder.get(i)).append(File.separator);
+								
+							} // for
+							
+							// tell the client what the current working directory is
+							sendMessage("Current Directory: " + clientsCurrentDirectory.toString());
 							
 							break;
 						default:

@@ -87,10 +87,10 @@ public class Requester {
  	void receiveFile(String fileName, int fileSize){
  		
  		// create the downloads directory file
- 		File file = new File("Downloads");
+ 		/*File file = new File("Downloads");
  		
  		// make the file a directory
- 		file.mkdirs();
+ 		file.mkdirs();*/
  		
  		try {
  			
@@ -99,7 +99,7 @@ public class Requester {
  		    byte[] fileBytes = (byte[]) in.readObject();
  		    
  		    // create a file output stream
- 		    fos = new FileOutputStream("Downloads" + File.separator + fileName);
+ 		    fos = new FileOutputStream(fileName);
  		    
  		    // write the received file bytes to the file
  		    fos.write(fileBytes); 
