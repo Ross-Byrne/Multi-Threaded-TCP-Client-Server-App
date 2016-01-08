@@ -37,7 +37,7 @@ Lists all of the files and directories in the clients folder when the client in 
 Also lists all of the files and directories in the clients current directory on the server.
 
 ##### cd .. 
-Moves the client back a directory on the server unless the client is already in their home 		directory.
+Typing cd .. moves the client back a directory on the server unless the client is already in their home 		directory.
 
 ##### cd
 Typing cd followed by the name of a directory that is in your current directory, will move you to that directory.
