@@ -35,12 +35,12 @@ The server is set up as follows:
 
 The server is in a folder called TCP-Server. 
 In TCP-Server, the files EchoServer.class and ClientServiceThread.class, as well as login.txt are placed.
-Once the server starts, it will create a folder called Users, and fills it with folders named after all the Usernames in login.txt.
+Once the server starts, it will create a folder called Users, and fill it with folders named after all the Usernames in login.txt.
 
 The client is set up as follows:
 
 The client must be in a folder called client.
-In client, the file requester.class is placed. Any files you wish to send to the server must also be placed in client with requester.class.
+In client, the file requester.class is placed. Any files you wish to send to the server must also be placed in the folder client with requester.class.
 
 ## Controls
 
