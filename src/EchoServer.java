@@ -15,6 +15,26 @@ public class EchoServer {
 	    boolean isRunning = true;
 	    int id = 0;
 	    
+	    // create a Users directory
+ 		File file = new File("Users");
+ 		
+ 		// make the file a directory
+ 		file.mkdir();
+ 		
+ 		// gets reference for login file
+ 		file = new File(LOGIN_FILE);
+ 		
+ 		// checks if the file exists
+ 		if (!file.exists() || !file.isFile()){
+ 			
+ 			// print out warning message
+ 			System.out.println("Error, Login File missing. No Usernames or Passwords On Record!");
+ 			System.out.println("No Users will be able to login!");
+ 			
+ 			// if file doesnt exist or is a directory, create the file
+ 			file.createNewFile();
+ 		} // if
+ 		
 	    // load login details into map from login.txt
 	    
 	    BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(LOGIN_FILE)));
@@ -28,7 +48,15 @@ public class EchoServer {
 			
 			// add the username and password to the login details
 			loginDetails.put(login[0].toString(), login[1].toString());
-		
+			
+			// create a users folder and make a folder for all the users in the login file
+			
+			// make a file for the user in users folder
+	 		file = new File("Users" + File.separator + login[0]);
+	 		
+	 		// make the file a directory
+	 		file.mkdirs();
+	
 		} // while
 		
 		// close the buffered line reader
@@ -74,10 +102,13 @@ class ClientServiceThread extends Thread {
  	FileOutputStream fos;
 	
 	boolean clientIsLoggedIn = false;
-	List<String> clientsCurDirectory = new ArrayList(); // to keep track of the clients current directory
+	String clientsUsername = "";
 	
 	StringBuilder fileListSB = new StringBuilder();
 	StringBuilder directoryListSB = new StringBuilder();
+	
+	StringBuilder clientsCurrentDirectory = new StringBuilder(); // to hold the clients current directory
+	ArrayList<String> directoryHolder = new ArrayList(); // to hold directory values
 	
 	String[] clientInput;
 	int inputLength = 0;
@@ -138,20 +169,28 @@ class ClientServiceThread extends Thread {
 	
 	void receiveFile(String fileName, int fileSize){
  		
- 		// create the downloads directory file
- 		File file = new File("Downloads");
- 		
- 		// make the file a directory
- 		file.mkdirs();
+		// clear string builder
+		clientsCurrentDirectory.setLength(0);
+		
+		// create a string to represent the clients current directory
+		for(int i = 0; i < directoryHolder.size(); i++){
+			
+			// add the directory to the string builder followed by the separator for the system
+			clientsCurrentDirectory.append(directoryHolder.get(i)).append(File.separator);
+			
+		} // for
+
+		// create a file to track current directory
+		new File(clientsCurrentDirectory.toString());
  		
  		try {
  			
- 			// create an array of btyes
+ 			// create an array of bytes
  			// receive an array of bytes that make up the file and place them in fileBytes
  		    byte[] fileBytes = (byte[]) in.readObject();
  		    
  		    // create a file output stream
- 		    fos = new FileOutputStream("Downloads" + File.separator + fileName);
+ 		    fos = new FileOutputStream(clientsCurrentDirectory.toString() + File.separator + fileName);
  		    
  		    // write the received file bytes to the file
  		    fos.write(fileBytes); 
@@ -273,8 +312,19 @@ class ClientServiceThread extends Thread {
 						switch(clientInput[0]){ // get command
 						case "ls":
 							
+							// clear string builder
+							clientsCurrentDirectory.setLength(0);
+							
+							// create a string to represent the clients current directory
+							for(int i = 0; i < directoryHolder.size(); i++){
+								
+								// add the directory to the string builder followed by the separator for the system
+								clientsCurrentDirectory.append(directoryHolder.get(i)).append(File.separator);
+								
+							} // for
+				
 							// create a file to track current directory
-							File currentDirectory = new File(".");
+							File currentDirectory = new File(clientsCurrentDirectory.toString());
 							
 							// create an array of all the files in current directory
 							File[] listOfFiles = currentDirectory.listFiles();
@@ -282,28 +332,32 @@ class ClientServiceThread extends Thread {
 							fileListSB.append("Files:");
 							directoryListSB.append("Directories:");
 							
-							// loop through the list of files in the directory
-						    for (int i = 0; i < listOfFiles.length; i++) {
-						    	
-						    	// if the file is a file
-						    	if (listOfFiles[i].isFile()) {
-						    		
-						    		// add name to list of files string
-						    		fileListSB.append("  ").append(listOfFiles[i].getName());
-						    		
-						    		//System.out.println("File " + listOfFiles[i].getName());
-						    		
-						    	} else if (listOfFiles[i].isDirectory()) { // if the file is a directory
-						    	  
-						    		// add name to list of directories string
-						    		directoryListSB.append("  ").append(listOfFiles[i].getName());
-						    		
-						    		//System.out.println("Directory " + listOfFiles[i].getName());
-						    	} // if
-					    	} // for
+							// if the array of files is not empty
+							if(listOfFiles != null){
+								
+								// loop through the list of files in the directory
+							    for (int i = 0; i < listOfFiles.length; i++) {
+							    	
+							    	// if the file is a file
+							    	if (listOfFiles[i].isFile()) {
+							    		
+							    		// add name to list of files string
+							    		fileListSB.append("  ").append(listOfFiles[i].getName());
+							    		
+							    		//System.out.println("File " + listOfFiles[i].getName());
+							    		
+							    	} else if (listOfFiles[i].isDirectory()) { // if the file is a directory
+							    	  
+							    		// add name to list of directories string
+							    		directoryListSB.append("  ").append(listOfFiles[i].getName());
+							    		
+							    		//System.out.println("Directory " + listOfFiles[i].getName());
+							    	} // if
+						    	} // for
+							} // if
 						    
 						    // send results to the client
-						    sendMessage("Server's Files.");
+						    sendMessage("Server's Files @ " + clientsCurrentDirectory.toString());
 						    sendMessage(directoryListSB.toString());
 						    sendMessage(fileListSB.toString());
 						    
@@ -383,25 +437,9 @@ class ClientServiceThread extends Thread {
 					
 				} catch(EOFException e){
 					
-					System.err.println("Connection To Client " + clientID + " Was Lost!");
+					System.err.println("Connection To Client " + clientID + " Was Lost!");	
 					
-				} finally{
-					
-					// Closing connection
-					
-					try{
-						
-						in.close();
-						out.close();
-						clientSocket.close();
-						
-						// break out of while loop
-						break;
-						
-					} catch(IOException ioException){
-						
-						ioException.printStackTrace();
-					} // try catch
+					break; // to exit the while loop
 					
 				} // try catch
 			
@@ -479,6 +517,14 @@ class ClientServiceThread extends Thread {
 				
 				// send server finished message
 				sendMessage(SERVER_FINISHED_MSG);
+				
+				// save the clients username
+				clientsUsername = user;
+				
+				// set the clients home directory to the users folder
+				directoryHolder.clear();
+				directoryHolder.add("Users");
+				directoryHolder.add(clientsUsername);
 				
 				return true;
 				
