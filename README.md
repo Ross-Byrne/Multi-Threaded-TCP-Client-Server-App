@@ -17,7 +17,7 @@ The server/client is modelled after bash in the linux terminal.
 The server should transfer any file type (.txt, .md and .pdf are the only tested file formats).
 Java converts the files into a byte array and sents the array. The other end receives the byte array and creates a file out of it.
 
-### Desgin
+## Desgin
 Communication between the server and client is as follows:
 After login, the client sends a command to the server and then waits until the server is finished. It knows this because of the set SERVER_FINISHED_MSG message.
 
@@ -30,27 +30,27 @@ The current directory is split up into strings and stored in a List of Strings. 
 
 When the client moves into a new directory, a the directory name is added to the end of the current directory List. When the client moves back one directory, the last item in the List is deleted.
 
-### Controls
+## Controls
 
-##### ls	
+### ls	
 Lists all of the files and directories in the clients folder when the client in run from.
 Also lists all of the files and directories in the clients current directory on the server.
 
-##### cd .. 
+### cd .. 
 Typing cd .. moves the client back a directory on the server unless the client is already in their home 		directory.
 
-##### cd
+### cd
 Typing cd followed by the name of a directory that is in your current directory, will move you to that directory.
 
-##### mkdir
+### mkdir
 Like bash, mkdir followed by the name of the directory you want to create, will create that directory.
 
-##### pwd
+### pwd
 Like in bash, pwd prints out your current directory.
 
-##### get
+### get
 Typing get followed by the name of a file eg "file1.txt" or "slides.pdf", will send the file from the server and into client folder that the client is running from. Might crash with files bigger then 1GB.
 
-##### send
+### send
 Typing send followed by the name of a file will send the file from the client and place it in the clients current directory on the server. Might crash with files bigger then 1GB.
 			
