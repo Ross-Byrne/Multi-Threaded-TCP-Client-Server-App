@@ -489,7 +489,7 @@ class ClientServiceThread extends Thread {
 									if(targetDirectory.isDirectory()){
 										
 										// tell the client their directory is being changed
-										sendMessage("Moving to: " + clientsCurrentDirectory.toString() + File.separator + clientInput[1]);
+										sendMessage("Moving to: " + clientsCurrentDirectory.toString() + clientInput[1]);
 										
 										// move the client's current directory to the new directory
 										directoryHolder.add(clientInput[1]);
