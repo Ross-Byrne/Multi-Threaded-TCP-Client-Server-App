@@ -17,6 +17,8 @@ The server/client is modelled after bash in the linux terminal.
 The server should transfer any file type (.txt, .md and .pdf are the only tested file formats).
 Java converts the files into a byte array and sents the array. The other end receives the byte array and creates a file out of it.
 
+To logout and disconnect from the server, type message "bye".
+
 ## Desgin
 Communication between the server and client is as follows:
 After login, the client sends a command to the server and then waits until the server is finished. It knows this because of the set SERVER_FINISHED_MSG message.
@@ -65,4 +67,7 @@ Typing get followed by the name of a file eg "file1.txt" or "slides.pdf", will s
 
 ### send
 Typing send followed by the name of a file will send the file from the client and place it in the clients current directory on the server. Might crash with files bigger then 1GB.
+
+### bye
+Typing bye will log the client out and disconnect from the server. Server will keep running until manually closed. 
 			
