@@ -82,6 +82,8 @@ public class EchoServer {
 
 class ClientServiceThread extends Thread {
 	
+	/*============================= Variables =============================*/
+	
 	static final String SERVER_FINISHED_MSG = "_server+finished_";
 	static final String SERVER_SENDING_FILE_MSG = "_server+sending+file_";
 	static final String CLIENT_SENDING_FILE_MSG = "_client+sending+file_";
@@ -113,6 +115,9 @@ class ClientServiceThread extends Thread {
 	String[] clientInput;
 	int inputLength = 0;
 	
+	
+	/*============================= Constructor =============================*/
+	
 	// Constructor
 	ClientServiceThread(Socket s, int i, Map<String, String> loginMap) {
 		
@@ -122,6 +127,13 @@ class ClientServiceThread extends Thread {
 	    
 	} // ClientServiceThread()
 	
+	
+	/*============================= Methods =============================*/
+	
+	
+	/*============================= sendFile() =============================*/
+	
+	// sends a file to the client
 	void sendFile(File file){
 		
 		int bytesRead = 0;
@@ -167,6 +179,9 @@ class ClientServiceThread extends Thread {
 	} // sendFile()
 	
 	
+	/*============================= receiveFile() =============================*/
+	
+	// receives a file from the client
 	void receiveFile(String fileName, int fileSize){
  		
 		// clear string builder
@@ -222,7 +237,11 @@ class ClientServiceThread extends Thread {
 		} // try catch
  		
  	} // receiveFile()
+	
+	
+	/*============================= sendMessage() =============================*/
 
+	// sends a String to the client
 	void sendMessage(String msg){
 		
 		try{
@@ -237,10 +256,105 @@ class ClientServiceThread extends Thread {
 		
 	} // sendMessage()
 	
+	
+	/*============================= clientLogin() =============================*/
+	
+	// log the client in
+	// returns true if client login is correct, false if wrong
+	boolean clientLogin(){
+		
+		String user, pass;
+		boolean isValidLogin = false;
+		
+		try {
+			
+			// tell client to enter username
+			sendMessage("Login To Server.");
+			sendMessage("Enter Username.");
+			
+			// send server finished message
+			sendMessage(SERVER_FINISHED_MSG);
+			
+			// read username in
+			user = (String)in.readObject();
+			
+			System.out.println("Client " + clientID + " to Server >  " + user);
+			
+			// tell user to enter password
+			sendMessage("Enter Password.");
+			
+			// send server finished message
+			sendMessage(SERVER_FINISHED_MSG);
+			
+			// read password in
+			pass = (String)in.readObject();
+			
+			System.out.println("Client " + clientID + " to Server >  " + pass);
+			
+			if(loginDetails.get(user) != null){
+			
+				isValidLogin = loginDetails.get(user).equals(pass);
+			} else {
+				
+				isValidLogin = false;
+			} // if
+			
+			// validate login
+			if(isValidLogin == true){ // login successful
+				
+				// tell client login successful
+				sendMessage("Login Successful!");
+				
+				// send server finished message
+				sendMessage(SERVER_FINISHED_MSG);
+				
+				// save the clients username
+				clientsUsername = user;
+				
+				// set the clients home directory to the users folder
+				directoryHolder.clear();
+				directoryHolder.add("Users");
+				directoryHolder.add(clientsUsername);
+				
+				return true;
+				
+			} else { // login failed
+				
+				// tell client login failed
+				
+				sendMessage("Login Failed! Username Or Password Incorrect!");
+				
+				// client is disconnected
+				// send "bye" message to disconnect client
+				sendMessage("bye");
+				
+				return false;
+			} // if
+			
+		} catch (ClassNotFoundException e) {
+			
+			System.err.println("Data received in unknown format");
+			
+			return false;
+			
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+			
+			return false;
+		} // try catch
+		
+	} // clientLogin()
+	
+	
+	/*============================= run() =============================*/
+	
+	// runs the thread
 	public void run() {
 		
 		System.out.println("Accepted Client : ID - " + clientID + " : Address - "
         + clientSocket.getInetAddress().getHostName());
+		
 		try {
 			
 			out = new ObjectOutputStream(clientSocket.getOutputStream());
@@ -255,7 +369,7 @@ class ClientServiceThread extends Thread {
 			
 			// after connecting, user must login
 			
-			clientIsLoggedIn = clientlogin();
+			clientIsLoggedIn = clientLogin();
 			
 			// keep looping while the client is still logged in
 			while(clientIsLoggedIn){ // main loop
@@ -641,92 +755,5 @@ class ClientServiceThread extends Thread {
 		} // try catch
 		
 	} // run()
-	
-	// login the client in
-	// returns true if client login is correct, false if wrong
-	boolean clientlogin(){
-		
-		String user, pass;
-		boolean isValidLogin = false;
-		
-		try {
-			
-			// tell client to enter username
-			sendMessage("Login To Server.");
-			sendMessage("Enter Username.");
-			
-			// send server finished message
-			sendMessage(SERVER_FINISHED_MSG);
-			
-			// read username in
-			user = (String)in.readObject();
-			
-			System.out.println("Client " + clientID + " to Server >  " + user);
-			
-			// tell user to enter password
-			sendMessage("Enter Password.");
-			
-			// send server finished message
-			sendMessage(SERVER_FINISHED_MSG);
-			
-			// read password in
-			pass = (String)in.readObject();
-			
-			System.out.println("Client " + clientID + " to Server >  " + pass);
-			
-			if(loginDetails.get(user) != null){
-			
-				isValidLogin = loginDetails.get(user).equals(pass);
-			} else {
-				
-				isValidLogin = false;
-			} // if
-			
-			// validate login
-			if(isValidLogin == true){ // login successful
-				
-				// tell client login successful
-				sendMessage("Login Successful!");
-				
-				// send server finished message
-				sendMessage(SERVER_FINISHED_MSG);
-				
-				// save the clients username
-				clientsUsername = user;
-				
-				// set the clients home directory to the users folder
-				directoryHolder.clear();
-				directoryHolder.add("Users");
-				directoryHolder.add(clientsUsername);
-				
-				return true;
-				
-			} else { // login failed
-				
-				// tell client login failed
-				
-				sendMessage("Login Failed! Username Or Password Incorrect!");
-				
-				// client is disconnected
-				// send "bye" message to disconnect client
-				sendMessage("bye");
-				
-				return false;
-			} // if
-			
-		} catch (ClassNotFoundException e) {
-			
-			System.err.println("Data received in unknown format");
-			
-			return false;
-			
-		} catch (IOException e) {
-			
-			e.printStackTrace();
-			
-			return false;
-		} // try catch
-		
-	} // clientlogin()
-	
+
 } // class

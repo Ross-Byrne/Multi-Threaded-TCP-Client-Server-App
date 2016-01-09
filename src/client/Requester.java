@@ -6,6 +6,8 @@ import java.util.*;
 
 public class Requester {
 	
+	/*============================= Variables =============================*/
+	
 	Socket requestSocket;
 	ObjectOutputStream out;
  	ObjectInputStream in;
@@ -30,7 +32,13 @@ public class Requester {
 	
  	String[] clientInput;
  	int inputLength = 0;
+ 	
+ 	
+ 	/*============================= Methods =============================*/
+ 	
+ 	/*============================= main() =============================*/
 	
+ 	// the main method
  	public static void main(String args[]){
  		
  		Requester client = new Requester();
@@ -39,6 +47,9 @@ public class Requester {
  	} // main()
  	
  	
+ 	/*============================= sendFile() =============================*/
+ 	
+ 	// sends a file to the server
  	void sendFile(File file){
 		
 		int bytesRead = 0;
@@ -83,7 +94,10 @@ public class Requester {
 		
 	} // sendFile()
 
-
+ 	
+ 	/*============================= receiveFile() =============================*/
+ 	
+ 	// receives a file from the server
  	void receiveFile(String fileName, int fileSize){
  		
  		// create the downloads directory file
@@ -131,7 +145,28 @@ public class Requester {
 		} // try catch
  		
  	} // receiveFile()
+ 	
+ 	
+ 	/*============================= sendMessage() =============================*/
+ 	
+ 	// sends a String to the server
+ 	void sendMessage(String msg){
+		
+		try{
+			out.writeObject(msg);
+			out.flush();
+			//System.out.println("client>" + msg);
+		} catch(IOException ioException){
+			
+			ioException.printStackTrace();
+		} // try catch
+		
+	} // sendMessage()
+ 	
+ 	
+ 	/*============================= run() =============================*/
 	
+ 	// run method that starts the thread
 	public void run(){
 		
 		scanner = new Scanner(System.in);
@@ -141,16 +176,17 @@ public class Requester {
 		int menuChoice = 0;
 		
 		try{
-			//1. creating a socket to connect to the server
 			
 			do{
 				
 				// Print out Menu Options
+				
 				System.out.println("\n1.) Type IP Address.");
 				System.out.println("2.) Type Domain Name To Perform DNS Lookup On. (May Crash If TimeOut Occurs!)");
 				
 				System.out.print("\nEnter Option: ");
 				
+				// make sure user enters a number
 				while(!scanner.hasNextInt()){
 					
 					System.out.print("Enter Option: ");
@@ -161,6 +197,7 @@ public class Requester {
 				// get users input
 				menuChoice = scanner.nextInt();
 			
+				// make sure number is in correct range
 			}while(menuChoice < 1 || menuChoice > 2); // do while
 			
 			switch(menuChoice){
@@ -197,13 +234,13 @@ public class Requester {
 			requestSocket = new Socket(ipaddress, 2004);
 			System.out.println("Connected to "+ipaddress+" in port 2004");
 			
-			//2. get Input and Output streams
+			// get Input and Output streams
 			
 			out = new ObjectOutputStream(requestSocket.getOutputStream());
 			out.flush();
 			in = new ObjectInputStream(requestSocket.getInputStream());		
 			
-			//3: Communicating with the server
+			// Communicating with the server
 			
 			do{
 				try{
@@ -252,7 +289,7 @@ public class Requester {
 						
 					} // if
 					
-					// if the client is allowed send a message
+					// if the client is allowed send a message or client is not finished
 					if(canSendMessage || !clientIsFinished){
 					
 						// get message from client
@@ -272,7 +309,7 @@ public class Requester {
 						if(!(inputLength > 2 || inputLength < 1) && !(clientInput[0].equals(""))){
 						
 							switch(clientInput[0]){ // get command
-							case "ls": // list the files on clients pc and files on the server
+							case "ls": // list the files on clients PC and files on the server
 								
 								// create a file to track current directory
 								File currentDirectory = new File(".");
@@ -306,6 +343,7 @@ public class Requester {
 							    System.out.println("Client > " + fileListSB.toString());
 							    
 							    // send list command to server too
+							    // so the server can list files and directories as well
 							    sendMessage(message);
 							    
 							    // clear string builders
@@ -321,6 +359,7 @@ public class Requester {
 								break;
 							case "send": // send a file to the server
 								
+								// check that the command has a parameter eg file name
 								if(clientInput.length == 2){
 									
 									File file = new File(clientInput[1]);
@@ -349,7 +388,7 @@ public class Requester {
 										
 									} else { // if the file exists
 										
-										System.out.println("File Found!");
+										System.out.println("Client > File Found!");
 										
 										// send message to server telling it to prepare to receive file
 										sendMessage(CLIENT_SENDING_FILE_MSG);
@@ -381,7 +420,7 @@ public class Requester {
 								} // if
 								
 								break;
-							default:
+							default: // if not one of the above commands, send to server
 								
 								// if the client is finished, send message to the server
 								if(clientIsFinished){
@@ -446,7 +485,7 @@ public class Requester {
 			ioException.printStackTrace();
 		} finally{
 			
-			//4: Closing connection
+			// Closing connection
 			
 			try{
 				
@@ -464,18 +503,5 @@ public class Requester {
 		} // try catch
 		
 	} // run()
-	
-	void sendMessage(String msg){
-		
-		try{
-			out.writeObject(msg);
-			out.flush();
-			//System.out.println("client>" + msg);
-		} catch(IOException ioException){
-			
-			ioException.printStackTrace();
-		} // try catch
-		
-	} // sendMessage()
-	
+
 } // class
