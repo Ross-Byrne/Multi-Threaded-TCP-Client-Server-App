@@ -39,7 +39,7 @@ public class Requester {
  	/*============================= main() =============================*/
 	
  	// the main method
- 	public static void main(String args[]){
+ 	public static void main(String[] args){
  		
  		Requester client = new Requester();
  		client.run();
