@@ -175,6 +175,8 @@ public class Requester {
 		boolean clientIsFinished = true;
 		int menuChoice = 0;
 		
+		System.out.println("For controls on how to use the Server/Client, see README.");
+		
 		try{
 			
 			do{
