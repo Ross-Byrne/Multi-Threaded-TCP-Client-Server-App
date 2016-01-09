@@ -20,6 +20,9 @@ Java converts the files into a byte array and sents the array. The other end rec
 To logout and disconnect the client from the server, type message "bye".
 To close the server, you must manually close the application.
 
+### _Important_
+File names and directory names CANNOT contain spaces. Files and directory names that have spaces will not be recognised!
+
 ## Desgin
 Communication between the server and client is as follows:
 After login, the client sends a command to the server and then waits until the server is finished. It knows this because of the set SERVER_FINISHED_MSG message.
@@ -55,19 +58,19 @@ Also lists all of the files and directories in the clients current directory on 
 Typing cd .. moves the client back a directory on the server unless the client is already in their home 		directory.
 
 ### cd
-Typing cd followed by the name of a directory that is in your current directory, will move you to that directory.
+Typing cd followed by the name of a directory that is in your current directory, will move you to that directory. Directories with spaces in their name will not be recognised.
 
 ### mkdir
-Like bash, mkdir followed by the name of the directory you want to create, will create that directory.
+Like bash, mkdir followed by the name of the directory you want to create, will create that directory. Directories cannot have spaces in their name.
 
 ### pwd
 Like in bash, pwd prints out your current directory.
 
 ### get
-Typing get followed by the name of a file eg "file1.txt" or "slides.pdf", will send the file from the server and into client folder that the client is running from. Might crash with files bigger then 1GB.
+Typing get followed by the name of a file eg "file1.txt" or "slides.pdf", will send the file from the server and into client folder that the client is running from. Might crash with files bigger then 1GB. Files with spaces in their name will not be recognised.
 
 ### send
-Typing send followed by the name of a file will send the file from the client and place it in the clients current directory on the server. Might crash with files bigger then 1GB.
+Typing send followed by the name of a file will send the file from the client and place it in the clients current directory on the server. Might crash with files bigger then 1GB. Files with spaces in their name will not be recognised.
 
 ### bye
 Typing bye will log the client out and disconnect from the server. Server will keep running until manually closed. 
